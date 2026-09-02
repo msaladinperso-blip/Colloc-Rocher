@@ -111,6 +111,7 @@ const MONTH_NAMES = ["janvier","février","mars","avril","mai","juin","juillet",
 const ABSENCE_TYPES = {
   night: { label: "Absent·e la nuit", color: "#3E4C6B" },
   dinner: { label: "Absent·e pour le dîner", color: "#C9773A" },
+  both: { label: "Absent·e la nuit et le dîner", color: "#7A4A5C" },
 };
 
 // ---- Identity (who is opening this link) ----
@@ -250,8 +251,12 @@ function absencesOn(dateKey) {
 }
 function effectiveTypeFor(dateKey, personKey) {
   const dayAbs = absencesOn(dateKey).filter(p => p.person === personKey);
-  if (dayAbs.some(p => p.type === "night")) return "night";
-  if (dayAbs.some(p => p.type === "dinner")) return "dinner";
+  const hasBoth = dayAbs.some(p => p.type === "both");
+  const hasNight = dayAbs.some(p => p.type === "night");
+  const hasDinner = dayAbs.some(p => p.type === "dinner");
+  if (hasBoth || (hasNight && hasDinner)) return "both";
+  if (hasNight) return "night";
+  if (hasDinner) return "dinner";
   return null;
 }
 
