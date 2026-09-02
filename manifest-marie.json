@@ -1,7 +1,7 @@
 {
-  "name": "Collocation rue du Rocher",
-  "short_name": "Rue du Rocher",
-  "start_url": "index.html",
+  "name": "Collocation rue du Rocher — Marie",
+  "short_name": "Marie · Rocher",
+  "start_url": "index-marie.html",
   "display": "standalone",
   "background_color": "#F5F0E4",
   "theme_color": "#F5F0E4",

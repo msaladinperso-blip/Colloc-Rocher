@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Collocation rue du Rocher</title>
+<link rel="manifest" href="manifest-olivier.json" />
+<link rel="icon" type="image/png" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-180.png" />
+<meta name="theme-color" content="#F5F0E4" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Olivier · Rocher" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Work+Sans:wght@400;500;600&display=swap');
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #F5F0E4; font-family: 'Work Sans', sans-serif; color: #3A3527; }
+  .page { min-height: 100vh; padding: 28px 16px 40px; }
+  .container { max-width: 640px; margin: 0 auto; }
+  .loading { text-align: center; padding: 60px 0; color: #8A8267; }
+  .eyebrow { font-size: 13px; color: #8A9A6E; font-weight: 600; margin-bottom: 4px; }
+  h1.title { font-family: 'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 34px; margin: 0 0 28px; color: #2E2A1E; }
+  .error-banner { background: #F4E3DC; color: #8C4A34; padding: 10px 14px; border-radius: 8px; font-size: 14px; margin-bottom: 20px; }
+  section.block { margin-bottom: 34px; }
+  h2.section-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px; margin: 0 0 14px; color: #2E2A1E; }
+
+  .presence-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .presence-card { flex: 1 1 220px; border: 1.5px solid #E4D9C0; border-radius: 14px; padding: 16px 16px 14px; background: #FDFBF6; }
+  .presence-card.home { border-color: #6E7F52; background: #F1F3EA; }
+  .presence-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
+  .name-btn { background: none; border: none; padding: 0; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: #2E2A1E; cursor: pointer; text-align: left; }
+  .name-input { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; border: none; border-bottom: 1.5px solid #6E7F52; background: transparent; padding: 0 0 2px; width: 60%; }
+  .status-pill { font-size: 11px; font-weight: 600; color: #FDFBF6; padding: 3px 9px; border-radius: 999px; white-space: nowrap; background: #B5A98A; }
+  .status-pill.home { background: #6E7F52; }
+  .toggle-btn { border: none; border-radius: 9px; padding: 9px 12px; font-size: 13.5px; font-weight: 500; cursor: pointer; width: 100%; background: #EFE8D6; color: #5A5240; }
+  .toggle-btn.home { background: #6E7F52; color: #FDFBF6; }
+  .updated-text { font-size: 11.5px; color: #A69C81; margin-top: 8px; }
+
+  .dinner-grid { background: #FDFBF6; border: 1px solid #E4D9C0; border-radius: 14px; padding: 14px 12px; overflow-x: auto; }
+  .dinner-header-row, .dinner-row { display: flex; align-items: center; }
+  .dinner-header-row { margin-bottom: 6px; }
+  .dinner-label-col { width: 84px; flex-shrink: 0; font-size: 13.5px; font-weight: 500; color: #5A5240; }
+  .day-head { flex: 1; text-align: center; font-size: 12px; min-width: 32px; color: #6B6350; }
+  .day-head.today { color: #6E7F52; font-weight: 600; }
+  .day-num { font-size: 11px; color: #B5A98A; }
+  .dinner-row { padding: 6px 0; }
+  .dinner-cell { flex: 1; display: flex; justify-content: center; }
+  .cx-dot { width: 34px; height: 34px; border-radius: 50%; border: none; cursor: pointer; font-size: 15px; background: #EFE8D6; color: #B5A98A; }
+  .cx-dot.on { background: #C98A4B; color: #FDFBF6; }
+
+  .legend { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #5A5240; }
+  .legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .legend-note { font-size: 12px; color: #A69C81; }
+
+  .calendar-wrap { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+  .month-block { flex: 1 1 260px; background: #FDFBF6; border: 1px solid #E4D9C0; border-radius: 14px; padding: 12px 10px 8px; }
+  .month-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 15px; margin-bottom: 8px; text-transform: capitalize; color: #2E2A1E; }
+  .week-header, .week-row { display: flex; }
+  .week-head-cell { flex: 1; text-align: center; font-size: 10.5px; color: #B5A98A; padding-bottom: 4px; }
+  .day-cell { flex: 1; aspect-ratio: 1; min-height: 34px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; margin: 1px; border: 1px solid transparent; }
+  .day-cell.today { border: 1.5px solid #2E2A1E; }
+  .day-cell-empty { flex: 1; min-height: 34px; margin: 1px; }
+  .day-num-small { font-size: 11.5px; color: #5A5240; }
+  .day-bars { display: flex; gap: 2px; margin-top: 2px; }
+  .day-bar { width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
+  .day-bar-empty { width: 5px; height: 5px; display: inline-block; }
+
+  .form-card { background: #FDFBF6; border: 1px solid #E4D9C0; border-radius: 14px; padding: 14px; }
+  .form-title { font-size: 13.5px; font-weight: 600; color: #5A5240; margin-bottom: 10px; }
+  .form-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  select, input[type="date"], .cx-input { border: 1.5px solid #E4D9C0; border-radius: 9px; padding: 9px 10px; font-size: 13.5px; background: #FDFBF6; font-family: 'Work Sans', sans-serif; }
+  .cx-input:focus, .name-input:focus { outline: 2px solid #8A9A6E; outline-offset: 1px; }
+  .form-arrow { color: #B5A98A; }
+  ul.period-list, ul.list { list-style: none; margin: 12px 0 0; padding: 0; }
+  ul.list { margin: 0; }
+  .period-item, .list-row { display: flex; align-items: center; gap: 9px; padding: 8px 2px; border-bottom: 1px solid #EDE5D2; }
+  .period-text { flex: 1; font-size: 13.5px; color: #3A3527; }
+  .del-btn { border: none; background: none; color: #C7BCA3; cursor: pointer; font-size: 13px; opacity: 0; transition: opacity 0.15s; }
+  .list-row:hover .del-btn, .period-item:hover .del-btn { opacity: 1; }
+
+  .shop-header { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .clear-btn { background: none; border: none; color: #8A9A6E; font-size: 12.5px; cursor: pointer; font-weight: 500; }
+  .add-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .add-input { flex: 1; border: 1.5px solid #E4D9C0; border-radius: 9px; padding: 10px 12px; font-size: 14.5px; font-family: 'Work Sans', sans-serif; background: #FDFBF6; }
+  .add-btn { border: none; background: #2E2A1E; color: #FDFBF6; border-radius: 9px; padding: 10px 16px; font-size: 13.5px; font-weight: 500; cursor: pointer; }
+  .empty-state { color: #A69C81; font-size: 14px; padding: 10px 2px; }
+  .cx-check { appearance: none; width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid #C7BCA3; background: #FDFBF6; cursor: pointer; position: relative; flex-shrink: 0; }
+  .cx-check:checked { background: #6E7F52; border-color: #6E7F52; }
+  .cx-check:checked::after { content: ''; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .item-text { flex: 1; font-size: 14.5px; }
+  .item-text.done { text-decoration: line-through; color: #B5A98A; }
+
+  footer.foot { text-align: center; font-size: 11.5px; color: #B5A98A; margin-top: 30px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div id="loading" class="loading">Chargement…</div>
+  <div id="app" class="container" style="display:none;"></div>
+</div>
+
+<script>
+// ---- Config ----
+const SUPABASE_URL = "https://ilnumtmzjynphldbnqfm.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_27_Z0YM6QZDAc6utQjL89w_LRC-LmqC";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+const MONTH_NAMES = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+const ABSENCE_TYPES = {
+  night: { label: "Absent·e la nuit", color: "#3E4C6B" },
+  dinner: { label: "Absent·e pour le dîner", color: "#C9773A" },
+};
+
+// ---- Identity (who is opening this link) ----
+// Open the app with ?who=a for the first person's link, ?who=b for the second.
+// Note: this only hides/disables controls in the browser for convenience — the
+// database itself doesn't enforce it, so treat these links as private, not secret.
+function getIdentity() {
+  return "b"; // dedicated page for this person, no URL param needed
+}
+const MY = getIdentity();
+function canEdit(personKey) {
+  return MY === personKey;
+}
+
+// ---- State ----
+let state = {
+  presence: { a: { name: "Marie" }, b: { name: "Olivier" } },
+  weekly: {},
+  shopping: [],
+  periods: [],
+};
+let editingName = null;
+let newItemValue = "";
+let form = { person: "a", type: "night", start: isoDate(new Date()), end: isoDate(new Date()), label: "" };
+
+// ---- Date helpers ----
+function isoDate(d) { return d.toISOString().slice(0, 10); }
+function startOfWeek(d) {
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  date.setDate(date.getDate() + diff);
+  date.setHours(0,0,0,0);
+  return date;
+}
+function weekDates() {
+  const start = startOfWeek(new Date());
+  return Array.from({length:7}, (_,i) => { const d = new Date(start); d.setDate(start.getDate()+i); return d; });
+}
+function monthMatrix(year, month) {
+  const first = new Date(year, month, 1);
+  const startOffset = (first.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const cells = [];
+  for (let i=0;i<startOffset;i++) cells.push(null);
+  for (let d=1; d<=daysInMonth; d++) cells.push(new Date(year, month, d));
+  while (cells.length % 7 !== 0) cells.push(null);
+  const weeks = [];
+  for (let i=0;i<cells.length;i+=7) weeks.push(cells.slice(i,i+7));
+  return weeks;
+}
+function twoMonthsFromToday() {
+  const now = new Date();
+  return [
+    { year: now.getFullYear(), month: now.getMonth() },
+    { year: now.getMonth()===11 ? now.getFullYear()+1 : now.getFullYear(), month: (now.getMonth()+1)%12 },
+  ];
+}
+function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+// ---- Supabase sync ----
+async function loadAll() {
+  const { data, error } = await client.from("household_data").select("key,value");
+  if (error) { showError("Impossible de charger les données."); return; }
+  (data || []).forEach(row => {
+    if (row.key === "presence") state.presence = row.value;
+    if (row.key === "weekly") state.weekly = row.value;
+    if (row.key === "shopping") state.shopping = row.value;
+    if (row.key === "periods") state.periods = row.value;
+  });
+}
+async function saveKey(key, value) {
+  state[key] = value;
+  render();
+  const { error } = await client.from("household_data").upsert({ key, value, updated_at: new Date().toISOString() });
+  if (error) showError("Échec de l'enregistrement.");
+}
+function showError(msg) {
+  const el = document.getElementById("error-banner");
+  if (el) { el.textContent = msg; el.style.display = "block"; }
+}
+
+function subscribeRealtime() {
+  client.channel("household_data_changes")
+    .on("postgres_changes", { event: "*", schema: "public", table: "household_data" }, (payload) => {
+      const row = payload.new;
+      if (!row || !row.key) return;
+      state[row.key] = row.value;
+      render();
+    })
+    .subscribe();
+}
+
+// ---- Actions ----
+function renamePerson(key, name) {
+  if (!canEdit(key)) return;
+  const next = { ...state.presence, [key]: { ...state.presence[key], name } };
+  saveKey("presence", next);
+}
+function toggleWeekly(dateKey, personKey, slot) {
+  if (!canEdit(personKey)) return;
+  const day = state.weekly[dateKey] || {};
+  const personDay = day[personKey] || {};
+  const next = { ...state.weekly, [dateKey]: { ...day, [personKey]: { ...personDay, [slot]: !personDay[slot] } } };
+  saveKey("weekly", next);
+}
+function addItem() {
+  const text = newItemValue.trim();
+  if (!text) return;
+  const next = [...state.shopping, { id: `${Date.now()}-${Math.random().toString(36).slice(2,7)}`, text, done: false }];
+  newItemValue = "";
+  saveKey("shopping", next);
+}
+function toggleItem(id) {
+  saveKey("shopping", state.shopping.map(it => it.id === id ? { ...it, done: !it.done } : it));
+}
+function removeItem(id) {
+  saveKey("shopping", state.shopping.filter(it => it.id !== id));
+}
+function clearDone() {
+  saveKey("shopping", state.shopping.filter(it => !it.done));
+}
+function addPeriod() {
+  if (!MY) return;
+  if (!form.start || !form.end || form.end < form.start) return;
+  const next = [...state.periods, { id: `${Date.now()}-${Math.random().toString(36).slice(2,7)}`, person: MY, type: form.type, start: form.start, end: form.end, label: form.label.trim() }];
+  form.label = "";
+  saveKey("periods", next);
+}
+function removePeriod(id) {
+  const target = state.periods.find(p => p.id === id);
+  if (!target || !canEdit(target.person)) return;
+  saveKey("periods", state.periods.filter(p => p.id !== id));
+}
+function absencesOn(dateKey) {
+  return state.periods.filter(p => dateKey >= p.start && dateKey <= p.end);
+}
+function effectiveTypeFor(dateKey, personKey) {
+  const dayAbs = absencesOn(dateKey).filter(p => p.person === personKey);
+  if (dayAbs.some(p => p.type === "night")) return "night";
+  if (dayAbs.some(p => p.type === "dinner")) return "dinner";
+  return null;
+}
+
+// ---- Render ----
+function render() {
+  const app = document.getElementById("app");
+  const dates = weekDates();
+  const months = twoMonthsFromToday();
+  const todayKey = isoDate(new Date());
+  const doneCount = state.shopping.filter(i => i.done).length;
+  const p = state.presence;
+
+  let html = `
+    <div class="eyebrow">Sous le même toit</div>
+    <h1 class="title">Collocation rue du Rocher</h1>
+    <div id="error-banner" class="error-banner" style="display:none;"></div>
+    ${MY
+      ? `<div class="legend-note" style="margin-bottom:18px;">Connecté·e en tant que <strong>${esc(p[MY].name)}</strong> — tu peux modifier tes propres présences et absences.</div>`
+      : `<div class="legend-note" style="margin-bottom:18px;">Lien sans identité : présences et absences en lecture seule. La liste de courses reste modifiable.</div>`
+    }
+
+    <section class="block">
+      <h2 class="section-title">Présence de la semaine</h2>
+      <div class="legend" style="margin-bottom:12px;">
+        ${["a","b"].map(key => `
+          <div>
+            ${editingName === key
+              ? `<input class="name-input" id="name-input-${key}" value="${esc(p[key].name)}" autofocus />`
+              : canEdit(key)
+                ? `<button class="name-btn" data-action="edit-name" data-key="${key}" title="Modifier le nom">${esc(p[key].name)}</button>`
+                : `<span class="name-btn" style="cursor:default;">${esc(p[key].name)}</span>`
+            }
+          </div>
+        `).join("")}
+      </div>
+      <div class="dinner-grid">
+        <div class="dinner-header-row">
+          <div class="dinner-label-col" style="width:108px;"></div>
+          ${dates.map(d => {
+            const dk = isoDate(d);
+            return `<div class="day-head ${dk===todayKey?"today":""}">
+              <div>${DAYS[(d.getDay()+6)%7]}</div>
+              <div class="day-num">${d.getDate()}</div>
+            </div>`;
+          }).join("")}
+        </div>
+        ${["a","b"].map(key => [
+          { slot: "dinner", label: `${esc(p[key].name)} · dîner`, color: "#C98A4B" },
+          { slot: "night", label: `${esc(p[key].name)} · nuit`, color: "#3E4C6B" },
+        ].map(({slot, label, color}) => `
+          <div class="dinner-row">
+            <div class="dinner-label-col" style="width:108px; font-size:12px;">${label}</div>
+            ${dates.map(d => {
+              const dk = isoDate(d);
+              const on = !!(state.weekly[dk] && state.weekly[dk][key] && state.weekly[dk][key][slot]);
+              const locked = !canEdit(key);
+              return `<div class="dinner-cell">
+                <button class="cx-dot" ${locked ? "" : `data-action="toggle-weekly" data-date="${dk}" data-key="${key}" data-slot="${slot}"`} style="background:${on?color:'#EFE8D6'};color:${on?'#FDFBF6':'#B5A98A'};${locked?"opacity:0.55;cursor:default;":""}" title="${locked ? "Modifiable uniquement par "+esc(p[key].name) : (on?"présent·e":"absent·e")}">${on?"✓":""}</button>
+              </div>`;
+            }).join("")}
+          </div>
+        `).join("")).join("")}
+      </div>
+    </section>
+
+    <section class="block">
+      <h2 class="section-title">Agenda des absences</h2>
+      <div class="legend">
+        ${Object.entries(ABSENCE_TYPES).map(([k,t]) => `<div class="legend-item"><span class="legend-dot" style="background:${t.color}"></span>${t.label}</div>`).join("")}
+        <div class="legend-note">gauche = ${esc(p.a.name)} · droite = ${esc(p.b.name)}</div>
+      </div>
+      <div class="calendar-wrap">
+        ${months.map(({year, month}) => `
+          <div class="month-block">
+            <div class="month-title">${MONTH_NAMES[month]} ${year}</div>
+            <div class="week-header">${DAYS.map(d => `<div class="week-head-cell">${d}</div>`).join("")}</div>
+            ${monthMatrix(year, month).map(week => `
+              <div class="week-row">
+                ${week.map(d => {
+                  if (!d) return `<div class="day-cell-empty"></div>`;
+                  const dk = isoDate(d);
+                  const abs = absencesOn(dk);
+                  const isToday = dk === todayKey;
+                  const title = abs.length ? abs.map(a => `${p[a.person].name}: ${ABSENCE_TYPES[a.type].label}${a.label ? " — "+a.label : ""}`).join(" · ") : "";
+                  return `<div class="day-cell ${isToday?"today":""}" title="${esc(title)}">
+                    <span class="day-num-small">${d.getDate()}</span>
+                    <span class="day-bars">
+                      ${["a","b"].map(key => {
+                        const t = effectiveTypeFor(dk, key);
+                        return t ? `<span class="day-bar" style="background:${ABSENCE_TYPES[t].color}"></span>` : `<span class="day-bar-empty"></span>`;
+                      }).join("")}
+                    </span>
+                  </div>`;
+                }).join("")}
+              </div>
+            `).join("")}
+          </div>
+        `).join("")}
+      </div>
+
+      ${MY ? `
+      <div class="form-card">
+        <div class="form-title">Ajouter une absence pour ${esc(p[MY].name)}</div>
+        <div class="form-row">
+          <select id="form-type">
+            ${Object.entries(ABSENCE_TYPES).map(([k,t]) => `<option value="${k}" ${form.type===k?"selected":""}>${t.label}</option>`).join("")}
+          </select>
+        </div>
+        <div class="form-row">
+          <input type="date" id="form-start" value="${form.start}" />
+          <span class="form-arrow">→</span>
+          <input type="date" id="form-end" value="${form.end}" min="${form.start}" />
+        </div>
+        <div class="form-row">
+          <input class="cx-input add-input" id="form-label" value="${esc(form.label)}" placeholder="Motif (vacances, chez des amis…) — facultatif" style="flex:1;" />
+          <button class="add-btn" data-action="add-period">Ajouter</button>
+        </div>
+      </div>
+      ` : `<div class="empty-state">Utilise ton lien personnel pour ajouter une absence.</div>`}
+
+      ${state.periods.length ? `
+        <ul class="period-list">
+          ${state.periods.slice().sort((a,b) => a.start.localeCompare(b.start)).map(pd => `
+            <li class="period-item">
+              <span class="legend-dot" style="background:${ABSENCE_TYPES[pd.type].color}"></span>
+              <span class="period-text"><strong>${esc(p[pd.person].name)}</strong> ${pd.start===pd.end ? `le ${pd.start}` : `du ${pd.start} au ${pd.end}`} — ${ABSENCE_TYPES[pd.type].label}${pd.label ? ` (${esc(pd.label)})` : ""}</span>
+              ${canEdit(pd.person) ? `<button class="del-btn" data-action="remove-period" data-id="${pd.id}" title="Supprimer">✕</button>` : ""}
+            </li>
+          `).join("")}
+        </ul>
+      ` : ""}
+    </section>
+
+    <section class="block">
+      <div class="shop-header">
+        <h2 class="section-title">Liste de courses</h2>
+        ${doneCount > 0 ? `<button class="clear-btn" data-action="clear-done">Retirer les ${doneCount} coché${doneCount>1?"s":""}</button>` : ""}
+      </div>
+      <div class="add-row">
+        <input class="cx-input add-input" id="new-item-input" value="${esc(newItemValue)}" placeholder="Ajouter un article…" />
+        <button class="add-btn" data-action="add-item">Ajouter</button>
+      </div>
+      ${state.shopping.length === 0
+        ? `<div class="empty-state">La liste est vide pour l'instant.</div>`
+        : `<ul class="list">
+            ${state.shopping.map(it => `
+              <li class="list-row">
+                <input type="checkbox" class="cx-check" data-action="toggle-item" data-id="${it.id}" ${it.done?"checked":""} />
+                <span class="item-text ${it.done?"done":""}">${esc(it.text)}</span>
+                <button class="del-btn" data-action="remove-item" data-id="${it.id}" title="Supprimer">✕</button>
+              </li>
+            `).join("")}
+          </ul>`
+      }
+    </section>
+
+    <footer class="foot">Les données sont partagées entre les personnes qui ouvrent cette appli.</footer>
+  `;
+
+  app.innerHTML = html;
+  wireEvents();
+}
+
+function wireEvents() {
+  const app = document.getElementById("app");
+
+  app.querySelectorAll('[data-action="edit-name"]').forEach(el => {
+    el.addEventListener("click", () => { editingName = el.dataset.key; render();
+      const input = document.getElementById(`name-input-${editingName}`);
+      if (input) { input.focus(); input.select(); }
+    });
+  });
+  ["a","b"].forEach(key => {
+    const input = document.getElementById(`name-input-${key}`);
+    if (input) {
+      input.addEventListener("keydown", (e) => { if (e.key === "Enter") input.blur(); });
+      input.addEventListener("blur", () => {
+        const val = input.value.trim();
+        editingName = null;
+        if (val) renamePerson(key, val); else render();
+      });
+    }
+  });
+  app.querySelectorAll('[data-action="toggle-weekly"]').forEach(el => {
+    el.addEventListener("click", () => toggleWeekly(el.dataset.date, el.dataset.key, el.dataset.slot));
+  });
+
+  const formType = document.getElementById("form-type");
+  const formStart = document.getElementById("form-start");
+  const formEnd = document.getElementById("form-end");
+  const formLabel = document.getElementById("form-label");
+  if (formType) formType.addEventListener("change", (e) => form.type = e.target.value);
+  if (formStart) formStart.addEventListener("change", (e) => { form.start = e.target.value; if (form.end < form.start) form.end = form.start; render(); });
+  if (formEnd) formEnd.addEventListener("change", (e) => form.end = e.target.value);
+  if (formLabel) formLabel.addEventListener("input", (e) => form.label = e.target.value);
+  app.querySelectorAll('[data-action="add-period"]').forEach(el => el.addEventListener("click", addPeriod));
+  app.querySelectorAll('[data-action="remove-period"]').forEach(el => el.addEventListener("click", () => removePeriod(el.dataset.id)));
+
+  const newItemInput = document.getElementById("new-item-input");
+  if (newItemInput) {
+    newItemInput.addEventListener("input", (e) => newItemValue = e.target.value);
+    newItemInput.addEventListener("keydown", (e) => { if (e.key === "Enter") addItem(); });
+  }
+  app.querySelectorAll('[data-action="add-item"]').forEach(el => el.addEventListener("click", addItem));
+  app.querySelectorAll('[data-action="toggle-item"]').forEach(el => el.addEventListener("change", () => toggleItem(el.dataset.id)));
+  app.querySelectorAll('[data-action="remove-item"]').forEach(el => el.addEventListener("click", () => removeItem(el.dataset.id)));
+  app.querySelectorAll('[data-action="clear-done"]').forEach(el => el.addEventListener("click", clearDone));
+}
+
+// ---- Init ----
+(async function init() {
+  await loadAll();
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  render();
+  subscribeRealtime();
+})();
+</script>
+</body>
+</html>
