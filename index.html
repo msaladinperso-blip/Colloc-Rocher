@@ -250,6 +250,9 @@ function removePeriod(id) {
 function absencesOn(dateKey) {
   return state.periods.filter(p => dateKey >= p.start && dateKey <= p.end);
 }
+function isAgendaAbsent(dateKey, personKey, slot) {
+  return absencesOn(dateKey).some(p => p.person === personKey && (p.type === "both" || p.type === slot));
+}
 function effectiveTypeFor(dateKey, personKey) {
   const dayAbs = absencesOn(dateKey).filter(p => p.person === personKey);
   const hasBoth = dayAbs.some(p => p.type === "both");
@@ -314,8 +317,18 @@ function render() {
               const dk = isoDate(d);
               const on = !!(state.weekly[dk] && state.weekly[dk][key] && state.weekly[dk][key][slot]);
               const locked = !canEdit(key);
+              const agendaAbsent = isAgendaAbsent(dk, key, slot);
+              const interactive = !locked && !agendaAbsent;
+              const bg = agendaAbsent ? "#FFFFFF" : (on ? color : "#EFE8D6");
+              const fg = agendaAbsent ? "#C7BCA3" : (on ? "#FDFBF6" : "#B5A98A");
+              const border = agendaAbsent ? "1px solid #D8CDB0" : "none";
+              const title = agendaAbsent
+                ? "absent·e (agenda)"
+                : locked
+                  ? "Modifiable uniquement par " + esc(p[key].name)
+                  : (on ? "présent·e" : "non renseigné");
               return `<div class="dinner-cell">
-                <button class="cx-dot" ${locked ? "" : `data-action="toggle-weekly" data-date="${dk}" data-key="${key}" data-slot="${slot}"`} style="background:${on?color:'#EFE8D6'};color:${on?'#FDFBF6':'#B5A98A'};${locked?"opacity:0.55;cursor:default;":""}" title="${locked ? "Modifiable uniquement par "+esc(p[key].name) : (on?"présent·e":"absent·e")}">${on?"✓":""}</button>
+                <button class="cx-dot" ${interactive ? `data-action="toggle-weekly" data-date="${dk}" data-key="${key}" data-slot="${slot}"` : ""} style="background:${bg};color:${fg};border:${border};${!interactive?"cursor:default;":""}${locked && !agendaAbsent ? "opacity:0.55;" : ""}" title="${title}">${agendaAbsent ? "–" : (on?"✓":"")}</button>
               </div>`;
             }).join("")}
           </div>
